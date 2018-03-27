@@ -70,7 +70,7 @@ class FIXContext(object):
 
     def getRepeatingGroup(self, tag):
         if self.isRepeatingGroup(tag):
-            return (len(self.tags[tag].groups), self.tags[tag].groups)
+            return len(self.tags[tag].groups), self.tags[tag].groups
         return None
 
     def getRepeatingGroupByTag(self, tag, identifierTag, identifierValue):

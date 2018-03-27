@@ -11,7 +11,7 @@ class DuplicateSeqNoError(Exception):
 
 
 class Journaler(object):
-    def __init__(self, filename = None):
+    def __init__(self, filename=None):
         if filename is None:
             self.conn = sqlite3.connect(":memory:")
         else:
@@ -69,7 +69,7 @@ class Journaler(object):
 
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            raise DuplicateSeqNoError("%s is a duplicate" % (seqNo, ))
+            raise DuplicateSeqNoError("%s is a duplicate" % (seqNo,))
 
     def recoverMsg(self, session, direction, seqNo):
         try:
@@ -87,12 +87,12 @@ class Journaler(object):
             msgs.append(pickle.loads(msg[0]))
         return msgs
 
-    def getAllMsgs(self, sessions=[], direction=None):
+    def getAllMsgs(self, sessions=(), direction=None):
         sql = "SELECT seqNo, msg, direction, session FROM message"
         clauses = []
         args = []
         if sessions is not None and len(sessions) != 0:
-            clauses.append("session in (" + ','.join('?'*len(sessions)) + ")")
+            clauses.append("session in (" + ','.join('?' * len(sessions)) + ")")
             args.extend(sessions)
         if direction is not None:
             clauses.append("direction = ?")

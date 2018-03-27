@@ -98,6 +98,7 @@ tags = {}
 for x in dir():
     tags[str(globals()[x])] = x
 
+
 def msgTypeToName(n):
     try:
         return tags[n]

@@ -38,7 +38,8 @@ class FIXMessageTests(unittest.TestCase):
         rptgrp3.setField("612", "hhh")
         rptgrp3.setField("613", "jjj")
         rptgrp2.addRepeatingGroup("445", rptgrp3, 0)
-        self.assertEqual("45=dgd|32=aaaa|323=bbbb|444=2=>[611=aaa|612=bbb|613=ccc, 611=zzz|612=yyy|613=xxx|445=1=>[611=ggg|612=hhh|613=jjj]]", str(msg))
+        self.assertEqual("45=dgd|32=aaaa|323=bbbb|444=2=>[611=aaa|612=bbb|613=ccc, "
+                         "611=zzz|612=yyy|613=xxx|445=1=>[611=ggg|612=hhh|613=jjj]]", str(msg))
 
         grp = msg.getRepeatingGroupByTag("444", "612", "yyy")
         self.assertEqual("611=zzz|612=yyy|613=xxx|445=1=>[611=ggg|612=hhh|613=jjj]", str(grp))
@@ -56,10 +57,11 @@ class FIXMessageTests(unittest.TestCase):
 
         msg.addRepeatingGroup("444", rptgrp1, 0)
 
-        str = pickle.dumps(msg)
+        st = pickle.dumps(msg)
 
-        msg2 = pickle.loads(str)
+        msg2 = pickle.loads(st)
         self.assertEqual(msg, msg2)
+
 
 if __name__ == '__main__':
     unittest.main()

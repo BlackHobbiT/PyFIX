@@ -5,9 +5,11 @@ from pyfix.engine import FIXEngine
 from pyfix.message import FIXMessage
 from pyfix.server_connection import FIXServer
 
+
 class Side(Enum):
     buy = 1
     sell = 2
+
 
 class Server(FIXEngine):
     def __init__(self):
@@ -33,26 +35,33 @@ class Server(FIXEngine):
         return True
 
     def onConnect(self, session):
-        logging.info("Accepted new connection from %s" % (session.address(), ))
+        logging.info("Accepted new connection from %s" % (session.address(),))
         # register to receive message notifications on the session which has just been created
         session.addMessageHandler(self.onLogin, MessageDirection.OUTBOUND, self.server.protocol.msgtype.LOGON)
-        session.addMessageHandler(self.onNewOrder, MessageDirection.INBOUND, self.server.protocol.msgtype.NEWORDERSINGLE)
+        session.addMessageHandler(self.onNewOrder, MessageDirection.INBOUND,
+                                  self.server.protocol.msgtype.NEWORDERSINGLE)
 
     def onDisconnect(self, session):
-        logging.info("%s has disconnected" % (session.address(), ))
+        logging.info("%s has disconnected" % (session.address(),))
         # we need to clean up our handlers, since this session is disconnected now
         session.removeMessageHandler(self.onLogin, MessageDirection.OUTBOUND, self.server.protocol.msgtype.LOGON)
-        session.removeMessageHandler(self.onNewOrder, MessageDirection.INBOUND, self.server.protocol.msgtype.NEWORDERSINGLE)
+        session.removeMessageHandler(self.onNewOrder, MessageDirection.INBOUND,
+                                     self.server.protocol.msgtype.NEWORDERSINGLE)
 
     def onLogin(self, connectionHandler, msg):
         codec = connectionHandler.codec
-        logging.info("[" + msg[codec.protocol.fixtags.SenderCompID] + "] <---- " + codec.protocol.msgtype.msgTypeToName(msg[codec.protocol.fixtags.MsgType]))
+        logging.info("[" + msg[codec.protocol.fixtags.SenderCompID] + "] <---- " + codec.protocol.msgtype.msgTypeToName(
+            msg[codec.protocol.fixtags.MsgType]))
 
     def onNewOrder(self, connectionHandler, request):
         codec = connectionHandler.codec
         try:
             side = Side(int(request.getField(codec.protocol.fixtags.Side)))
-            logging.debug("<--- [%s] %s: %s %s %s@%s" % (codec.protocol.msgtype.msgTypeToName(request.getField(codec.protocol.fixtags.MsgType)), request.getField(codec.protocol.fixtags.ClOrdID), request.getField(codec.protocol.fixtags.Symbol), side.name, request.getField(codec.protocol.fixtags.OrderQty), request.getField(codec.protocol.fixtags.Price)))
+            logging.debug("<--- [%s] %s: %s %s %s@%s" % (
+                codec.protocol.msgtype.msgTypeToName(request.getField(codec.protocol.fixtags.MsgType)),
+                request.getField(codec.protocol.fixtags.ClOrdID), request.getField(codec.protocol.fixtags.Symbol),
+                side.name, request.getField(codec.protocol.fixtags.OrderQty),
+                request.getField(codec.protocol.fixtags.Price)))
 
             # respond with an ExecutionReport Ack
             msg = FIXMessage(codec.protocol.msgtype.EXECUTIONREPORT)
@@ -72,7 +81,10 @@ class Server(FIXEngine):
             msg.setField(codec.protocol.fixtags.Currency, request.getField(codec.protocol.fixtags.Currency))
 
             connectionHandler.sendMsg(msg)
-            logging.debug("---> [%s] %s: %s %s %s@%s" % (codec.protocol.msgtype.msgTypeToName(msg.msgType), msg.getField(codec.protocol.fixtags.ClOrdID), request.getField(codec.protocol.fixtags.Symbol), side.name, request.getField(codec.protocol.fixtags.OrderQty), request.getField(codec.protocol.fixtags.Price)))
+            logging.debug("---> [%s] %s: %s %s %s@%s" % (
+                codec.protocol.msgtype.msgTypeToName(msg.msgType), msg.getField(codec.protocol.fixtags.ClOrdID),
+                request.getField(codec.protocol.fixtags.Symbol), side.name,
+                request.getField(codec.protocol.fixtags.OrderQty), request.getField(codec.protocol.fixtags.Price)))
         except Exception as e:
             msg = FIXMessage(codec.protocol.msgtype.EXECUTIONREPORT)
             msg.setField(codec.protocol.fixtags.OrdStatus, "4")
@@ -88,6 +100,7 @@ def main():
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     server = Server()
     logging.info("All done... shutting down")
+
 
 if __name__ == '__main__':
     main()

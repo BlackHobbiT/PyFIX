@@ -9,7 +9,7 @@ from pyfix.event import TimerEventRegistration
 
 class FIXClientConnectionHandler(FIXConnectionHandler):
     def __init__(self, engine, protocol, targetCompId, senderCompId, password, sock=None, addr=None, observer=None,
-                 targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
+                 targetSubId=None, senderSubId=None, heartbeatTimeout=30):
         FIXConnectionHandler.__init__(self, engine, protocol, sock, addr, observer)
 
         self.targetCompId = targetCompId
@@ -79,7 +79,7 @@ class FIXClientConnectionHandler(FIXConnectionHandler):
 
 class FIXClient(FIXEndPoint):
     def __init__(self, engine, protocol, targetCompId, senderCompId, password,
-                 targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
+                 targetSubId=None, senderSubId=None, heartbeatTimeout=30):
         self.targetCompId = targetCompId
         self.senderCompId = senderCompId
         self.targetSubId = targetSubId
@@ -120,7 +120,7 @@ class FIXClient(FIXEndPoint):
                                                 self.senderSubId, self.heartbeatTimeout)
         self.connections.append(connection)
         for handler in filter(lambda x: x[1] == ConnectionState.CONNECTED, self.connectionHandlers):
-                handler[0](connection)
+            handler[0](connection)
 
     def notifyDisconnect(self, connection):
         FIXEndPoint.notifyDisconnect(self, connection)
@@ -131,4 +131,3 @@ class FIXClient(FIXEndPoint):
         for connection in self.connections:
             connection.disconnect()
         self.socket.close()
-

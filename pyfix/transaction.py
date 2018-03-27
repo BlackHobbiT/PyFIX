@@ -3,7 +3,7 @@ class TransactionResource(object):
         self.action = action
 
     def commit(self):
-        if self.action != None:
+        if self.action is not None:
             self.action()
 
 

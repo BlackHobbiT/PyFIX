@@ -93,7 +93,7 @@ class Codec(object):
         cksum = sum([ord(i) for i in list(fixmsg)]) % 256
         fixmsg = fixmsg + "%s=%0.3i" % (self.protocol.fixtags.CheckSum, cksum)
 
-        #print len(fixmsg)
+        # print len(fixmsg)
 
         return fixmsg + SEP
 
@@ -173,7 +173,7 @@ class Codec(object):
                         while repeatingGroups and tag not in currentContext.repeatingGroupTags:
                             currentContext.parent.addRepeatingGroup(currentContext.tag, currentContext)
                             currentContext = currentContext.parent
-                            del repeatingGroups[-1] # pop the completed group off the stack
+                            del repeatingGroups[-1]  # pop the completed group off the stack
 
                         if tag in currentContext.tags:
                             # if the repeating group already contains this field, start the next
@@ -193,5 +193,5 @@ class Codec(object):
 
                 return decodedMsg, remainingMsgFragment
         except UnicodeDecodeError as why:
-            logging.error("Failed to parse message %s" % (why, ))
+            logging.error("Failed to parse message %s" % (why,))
             return None, 0

@@ -37,7 +37,8 @@ class FIXEngine(object):
             return None
 
     def findSessionByCompIds(self, targetCompId, senderCompId):
-        sessions = [x for x in self.sessions.values() if x.targetCompId == targetCompId and x.senderCompId == senderCompId]
+        sessions = [x for x in self.sessions.values() if(x.targetCompId == targetCompId) and
+                    (x.senderCompId == senderCompId)]
         if sessions is not None and len(sessions) != 0:
             return sessions[0]
         return None

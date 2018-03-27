@@ -39,9 +39,10 @@ class FIXServerConnectionHandler(FIXConnectionHandler):
                         self.disconnect()
                         return
                 else:
-                    logging.warning("Rejected login attempt for invalid session (SenderCompId: %s, TargetCompId: %s)" % (senderCompId, targetCompId))
+                    logging.warning("Rejected login attempt for invalid session (SenderCompId: %s, TargetCompId: %s)"
+                                    % (senderCompId, targetCompId))
                     self.disconnect()
-                    return # we have to return here since self.session won't be valid
+                    return  # we have to return here since self.session won't be valid
         elif self.connectionState == ConnectionState.LOGGED_IN:
             # compids are reversed here
             if not self.session.validateCompIds(senderCompId, targetCompId):
@@ -64,12 +65,12 @@ class FIXServerConnectionHandler(FIXConnectionHandler):
         else:
             logging.warning("Can't process message, counterparty is not logged in")
 
-        return (recvSeqNo, responses)
+        return recvSeqNo, responses
 
 
 class FIXServer(FIXEndPoint):
     def __init__(self, engine, protocol):
-     FIXEndPoint.__init__(self, engine, protocol)
+        FIXEndPoint.__init__(self, engine, protocol)
 
     def start(self, host, port):
         self.connections = []
@@ -89,7 +90,7 @@ class FIXServer(FIXEndPoint):
         self.serverSocketRegistration.fd.close()
         self.engine.eventManager.unregisterHandler(self.serverSocketRegistration)
 
-    def handle_accept(self, type, closure):
+    def handle_accept(self, types, closure):
         pair = self.socket.accept()
         if pair is not None:
             sock, addr = pair
@@ -97,4 +98,4 @@ class FIXServer(FIXEndPoint):
             connection = FIXServerConnectionHandler(self.engine, self.protocol, sock, addr, self)
             self.connections.append(connection)
             for handler in filter(lambda x: x[1] == ConnectionState.CONNECTED, self.connectionHandlers):
-                    handler[0](connection)
+                handler[0](connection)

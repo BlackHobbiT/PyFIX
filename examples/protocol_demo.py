@@ -1,5 +1,6 @@
 import logging
 
+
 class tag(object):
     def __init__(self, name, value, values):
         self.name = name
@@ -21,8 +22,10 @@ class tag(object):
 
     __repr__ = __str__
 
+
 class msgtype(object):
     pass
+
 
 class tags(object):
     def __init__(self):
@@ -34,16 +37,19 @@ class tags(object):
         setattr(self, key, t)
         self.tags[t] = key
 
+
 class Demo(object):
     def __init__(self):
-        t =tags()
+        t = tags()
         logging.debug("%s = %s" % (t.tags[t.MsgType], t.MsgType))
         logging.debug("ExecutionReport: %s" % (t.MsgType.ExecutionReport,))
+
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     server = Demo()
     logging.info("All done... shutting down")
+
 
 if __name__ == '__main__':
     main()

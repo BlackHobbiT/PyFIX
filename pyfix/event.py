@@ -43,7 +43,6 @@ class TimerEventRegistration(EventRegistration):
 
 
 class FileDescriptorEventRegistration(EventRegistration):
-
     def __init__(self, callback, fileDescriptor, eventType, closure=None):
         EventRegistration.__init__(self, callback, closure)
         self.fd = fileDescriptor
@@ -54,9 +53,9 @@ class FileDescriptorEventRegistration(EventRegistration):
 
 
 class _Event(object):
-    def __init__(self, fd, filter):
+    def __init__(self, fd, filters):
         self.fd = fd
-        self.filter = filter
+        self.filter = filters
 
 
 class EventLoop(object):
@@ -88,7 +87,7 @@ class SelectEventLoop(EventLoop):
             self.writeSet.remove(event.fd)
 
     def run(self, timeout):
-        if len(self.readSet) == 0 and len(self.writeSet) ==0:
+        if len(self.readSet) == 0 and len(self.writeSet) == 0:
             time.sleep(timeout)
             return []
         else:
@@ -147,9 +146,9 @@ class EventManager(object):
             if isinstance(handler, FileDescriptorEventRegistration):
                 for event in events:
                     if event.fd == handler.fd:
-                        type = handler.eventType.value & event.filter.value
-                        if type != EventType.NONE:
-                            handler.callback(type, handler.closure)
+                        types = handler.eventType.value & event.filter.value
+                        if types != EventType.NONE:
+                            handler.callback(types, handler.closure)
             elif isinstance(handler, TimerEventRegistration):
                 if handler.timeoutState == TimerEventRegistration.TimeoutState.PROGRESS:
                     elapsedTime = nowTime - handler.lastTime
