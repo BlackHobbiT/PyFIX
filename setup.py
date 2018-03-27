@@ -16,4 +16,4 @@ config = {
     'name': 'pyfix'
 }
 
-setup(**config)
+setup(**config, install_requires=['mock'])

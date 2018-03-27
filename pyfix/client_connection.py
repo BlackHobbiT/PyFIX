@@ -6,8 +6,10 @@ from pyfix.session import FIXSession
 from pyfix.connection import FIXEndPoint, ConnectionState, MessageDirection, FIXConnectionHandler
 from pyfix.event import TimerEventRegistration
 
+
 class FIXClientConnectionHandler(FIXConnectionHandler):
-    def __init__(self, engine, protocol, targetCompId, senderCompId, sock=None, addr=None, observer=None, targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
+    def __init__(self, engine, protocol, targetCompId, senderCompId, password, sock=None, addr=None, observer=None,
+                 targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
         FIXConnectionHandler.__init__(self, engine, protocol, sock, addr, observer)
 
         self.targetCompId = targetCompId
@@ -21,7 +23,7 @@ class FIXClientConnectionHandler(FIXConnectionHandler):
         if self.session is None:
             raise RuntimeError("Failed to create client session")
 
-        self.sendMsg(protocol.messages.Messages.logon())
+        self.sendMsg(protocol.messages.Messages.logon(password))
 
     def handleSessionMessage(self, msg):
         protocol = self.codec.protocol
@@ -72,21 +74,22 @@ class FIXClientConnectionHandler(FIXConnectionHandler):
         else:
             logging.warning("Can't process message, counterparty is not logged in")
 
-        return (recvSeqNo, responses)
-
+        return recvSeqNo, responses
 
 
 class FIXClient(FIXEndPoint):
-    def __init__(self, engine, protocol, targetCompId, senderCompId, targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
+    def __init__(self, engine, protocol, targetCompId, senderCompId, password,
+                 targetSubId = None, senderSubId = None, heartbeatTimeout = 30):
         self.targetCompId = targetCompId
         self.senderCompId = senderCompId
         self.targetSubId = targetSubId
         self.senderSubId = senderSubId
         self.heartbeatTimeout = heartbeatTimeout
+        self.password = password
 
         FIXEndPoint.__init__(self, engine, protocol)
 
-    def tryConnecting(self, type, closure):
+    def tryConnecting(self, ftype, closure):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             logging.debug("Attempting Connection to " + self.host + ":" + str(self.port))
@@ -112,7 +115,9 @@ class FIXClient(FIXEndPoint):
     def connected(self):
         self.addr = (self.host, self.port)
         logging.info("Connected to %s" % repr(self.addr))
-        connection = FIXClientConnectionHandler(self.engine, self.protocol, self.targetCompId, self.senderCompId, self.socket, self.addr, self, self.targetSubId, self.senderSubId, self.heartbeatTimeout)
+        connection = FIXClientConnectionHandler(self.engine, self.protocol, self.targetCompId, self.senderCompId,
+                                                self.password, self.socket, self.addr, self, self.targetSubId,
+                                                self.senderSubId, self.heartbeatTimeout)
         self.connections.append(connection)
         for handler in filter(lambda x: x[1] == ConnectionState.CONNECTED, self.connectionHandlers):
                 handler[0](connection)

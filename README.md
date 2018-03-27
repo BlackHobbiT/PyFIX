@@ -22,7 +22,7 @@ Create an `EventManager` object instance, this handles all the timers and socket
 Either you can create a `FIXClient` or a `FIXServer`. The Client initiates the connection and also initaiates the Logon sequence, a Server would sit there waiting for inbound connections, and expect a Logon message to be sent.
 ```python
 self.eventMgr = EventManager()
-self.client = FIXClient(self.eventMgr, "pyfix.FIX44", "TARGET", "SENDER")
+self.client = FIXClient(self.eventMgr, "pyfix.FIX44", "TARGET", "SENDER", "PASSWORD")
 
 # tell the client to start the connection sequence
 self.client.start('localhost', int("9898"))

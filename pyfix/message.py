@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
+
 from collections import OrderedDict
 from enum import Enum
+
 
 class MessageDirection(Enum):
     INBOUND = 0
     OUTBOUND = 1
+
 
 class _FIXRepeatingGroupContainer:
     def __init__(self):
@@ -25,6 +29,7 @@ class _FIXRepeatingGroupContainer:
         return str(len(self.groups)) + "=>" + str(self.groups)
 
     __repr__ = __str__
+
 
 class FIXContext(object):
     def __init__(self):
@@ -94,7 +99,7 @@ class FIXContext(object):
         return item in self.tags
 
     def __str__(self):
-        r= ""
+        r = ""
         allTags = []
         for tag in self.tags:
             allTags.append("%s=%s" % (tag, self.tags[tag]))
@@ -106,6 +111,7 @@ class FIXContext(object):
         return self.__str__() == other.__str__()
 
     __repr__ = __str__
+
 
 class FIXMessage(FIXContext):
     def __init__(self, msgType):

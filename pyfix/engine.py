@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 from pyfix.event import EventManager
 from pyfix.journaler import Journaler
 
+
 class FIXEngine(object):
-    def __init__(self, journalfile = None):
+    def __init__(self, journalfile=None):
         self.eventManager = EventManager()
         self.journaller = Journaler(journalfile)
         self.sessions = {}

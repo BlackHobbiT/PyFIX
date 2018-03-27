@@ -1,13 +1,18 @@
+#!/usr/bin/env python3
+
 from pyfix.FIX44 import msgtype, fixtags
 from pyfix.message import FIXMessage
+
 
 class Messages(object):
 
     @staticmethod
-    def logon():
+    def logon(password: str):
         msg = FIXMessage(msgtype.LOGON)
         msg.setField(fixtags.EncryptMethod, 0)
         msg.setField(fixtags.HeartBtInt, 30)
+        msg.setField(fixtags.ResetSeqNumFlag, 'Y')
+        msg.setField(fixtags.Password, password)
         return msg
 
     @staticmethod

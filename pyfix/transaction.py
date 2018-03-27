@@ -1,4 +1,3 @@
-
 class TransactionResource(object):
     def __init__(self, action):
         self.action = action
@@ -7,8 +6,8 @@ class TransactionResource(object):
         if self.action != None:
             self.action()
 
-class Transaction(TransactionResource):
 
+class Transaction(TransactionResource):
     def __init__(self):
         self.resources = []
         TransactionResource.__init__(self, None)
@@ -20,6 +19,7 @@ class Transaction(TransactionResource):
     def commit(self):
         for resource in self.resources:
             resource.commit()
+
 
 class PriorityTransaction(TransactionResource):
     def __init__(self):

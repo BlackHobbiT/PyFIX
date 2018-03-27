@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+
 import logging
 import socket
 from pyfix.journaler import DuplicateSeqNoError
 from pyfix.session import FIXSession
 from pyfix.connection import FIXEndPoint, ConnectionState, MessageDirection, FIXConnectionHandler
 from pyfix.event import FileDescriptorEventRegistration, EventType
+
 
 class FIXServerConnectionHandler(FIXConnectionHandler):
     def __init__(self, engine, protocol, sock=None, addr=None, observer=None):
@@ -62,6 +65,7 @@ class FIXServerConnectionHandler(FIXConnectionHandler):
             logging.warning("Can't process message, counterparty is not logged in")
 
         return (recvSeqNo, responses)
+
 
 class FIXServer(FIXEndPoint):
     def __init__(self, engine, protocol):

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sqlite3
 import pickle
 from pyfix.message import MessageDirection
@@ -6,6 +8,7 @@ from pyfix.session import FIXSession
 
 class DuplicateSeqNoError(Exception):
     pass
+
 
 class Journaler(object):
     def __init__(self, filename = None):
@@ -16,19 +19,19 @@ class Journaler(object):
 
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS message("
-                               "seqNo INTEGER NOT NULL,"
-                               "session TEXT NOT NULL,"
-                               "direction INTEGER NOT NULL,"
-                               "msg TEXT,"
-                               "PRIMARY KEY (seqNo, session, direction))")
+                            "seqNo INTEGER NOT NULL,"
+                            "session TEXT NOT NULL,"
+                            "direction INTEGER NOT NULL,"
+                            "msg TEXT,"
+                            "PRIMARY KEY (seqNo, session, direction))")
 
         self.cursor.execute("CREATE TABLE IF NOT EXISTS session("
-                               "sessionId INTEGER PRIMARY KEY AUTOINCREMENT,"
-                               "targetCompId TEXT NOT NULL,"
-                               "senderCompId TEXT NOT NULL,"
-                               "outboundSeqNo INTEGER DEFAULT 0,"
-                               "inboundSeqNo INTEGER DEFAULT 0,"
-                               "UNIQUE (targetCompId, senderCompId))")
+                            "sessionId INTEGER PRIMARY KEY AUTOINCREMENT,"
+                            "targetCompId TEXT NOT NULL,"
+                            "senderCompId TEXT NOT NULL,"
+                            "outboundSeqNo INTEGER DEFAULT 0,"
+                            "inboundSeqNo INTEGER DEFAULT 0,"
+                            "UNIQUE (targetCompId, senderCompId))")
 
     def sessions(self):
         sessions = []
@@ -42,14 +45,15 @@ class Journaler(object):
         return sessions
 
     def createSession(self, targetCompId, senderCompId):
-        session = None
         try:
-            self.cursor.execute("INSERT INTO session(targetCompId, senderCompId) VALUES(?, ?)", (targetCompId, senderCompId))
+            self.cursor.execute("INSERT INTO session(targetCompId, senderCompId) VALUES(?, ?)",
+                                (targetCompId, senderCompId))
             sessionId = self.cursor.lastrowid
             self.conn.commit()
             session = FIXSession(sessionId, targetCompId, senderCompId)
         except sqlite3.IntegrityError:
-            raise RuntimeError("Session already exists for TargetCompId: %s SenderCompId: %s" % (targetCompId, senderCompId))
+            raise RuntimeError("Session already exists for TargetCompId: %s SenderCompId: %s" %
+                               (targetCompId, senderCompId))
 
         return session
 
@@ -75,13 +79,15 @@ class Journaler(object):
             return None
 
     def recoverMsgs(self, session, direction, startSeqNo, endSeqNo):
-        self.cursor.execute("SELECT msg FROM message WHERE session = ? AND direction = ? AND seqNo >= ? AND seqNo <= ? ORDER BY seqNo", (session.key, direction.value, startSeqNo, endSeqNo))
+        self.cursor.execute("SELECT msg FROM message WHERE "
+                            "session = ? AND direction = ? AND seqNo >= ? AND seqNo <= ? ORDER BY seqNo",
+                            (session.key, direction.value, startSeqNo, endSeqNo))
         msgs = []
         for msg in self.cursor:
             msgs.append(pickle.loads(msg[0]))
         return msgs
 
-    def getAllMsgs(self, sessions = [], direction = None):
+    def getAllMsgs(self, sessions=[], direction=None):
         sql = "SELECT seqNo, msg, direction, session FROM message"
         clauses = []
         args = []

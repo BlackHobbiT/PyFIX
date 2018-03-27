@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import importlib
 import sys
 from pyfix.codec import Codec
@@ -8,6 +10,7 @@ from pyfix.session import *
 from enum import Enum
 from pyfix.event import FileDescriptorEventRegistration, EventType, TimerEventRegistration
 
+
 class ConnectionState(Enum):
     UNKNOWN = 0
     DISCONNECTED = 1
@@ -15,21 +18,25 @@ class ConnectionState(Enum):
     LOGGED_IN = 3
     LOGGED_OUT = 4
 
+
 class FIXException(Exception):
     class FIXExceptionReason(Enum):
         NOT_CONNECTED = 0
         DECODE_ERROR = 1
         ENCODE_ERROR = 2
 
-    def __init__(self, reason, description = None):
+    def __init__(self, reason, description=None):
         super(Exception, self).__init__(description)
         self.reason = reason
+
 
 class SessionWarning(Exception):
     pass
 
+
 class SessionError(Exception):
     pass
+
 
 class FIXConnectionHandler(object):
     def __init__(self, engine, protocol, sock=None, addr=None, observer=None):
@@ -57,14 +64,15 @@ class FIXConnectionHandler(object):
     def _notifyMessageObservers(self, msg, direction, persistMessage=True):
         if persistMessage is True:
             self.engine.journaller.persistMsg(msg, self.session, direction)
-        for handler in filter(lambda x: (x[1] is None or x[1] == direction) and (x[2] is None or x[2] == msg.msgType), self.msgHandlers):
+        for handler in filter(lambda x: (x[1] is None or x[1] == direction) and (x[2] is None or x[2] == msg.msgType),
+                              self.msgHandlers):
             handler[0](self, msg)
 
-    def addMessageHandler(self, handler, direction = None, msgType = None):
+    def addMessageHandler(self, handler, direction=None, msgType=None):
         self.msgHandlers.append((handler, direction, msgType))
 
-    def removeMessageHandler(self, handler, direction = None, msgType = None):
-        remove = filter(lambda x: x[0] == handler and
+    def removeMessageHandler(self, handler, direction=None, msgType=None):
+        remove = filter(lambda x: (x[0] == handler) and
                                   (x[1] == direction or direction is None) and
                                   (x[2] == msgType or msgType is None), self.msgHandlers)
         for h in remove:
@@ -73,17 +81,18 @@ class FIXConnectionHandler(object):
     def _sendHeartbeat(self):
         self.sendMsg(self.codec.protocol.messages.Messages.heartbeat())
 
-    def _expectedHeartbeat(self, type, closure):
-        logging.warning("Expected heartbeat from peer %s" % (self.expectedHeartbeatRegistration ,))
+    def _expectedHeartbeat(self, msgtype, closure):
+        logging.warning("Expected heartbeat from peer %s" % (self.expectedHeartbeatRegistration,))
         self.sendMsg(self.codec.protocol.messages.Messages.test_request())
 
     def registerLoggedIn(self):
-        self.heartbeatTimerRegistration = TimerEventRegistration(lambda type, closure: self._sendHeartbeat(), self.heartbeatPeriod)
+        self.heartbeatTimerRegistration = TimerEventRegistration(lambda msgtype, closure: self._sendHeartbeat(),
+                                                                 self.heartbeatPeriod)
         self.engine.eventManager.registerHandler(self.heartbeatTimerRegistration)
         # register timeout for 10% more than we expect
-        self.expectedHeartbeatRegistration = TimerEventRegistration(self._expectedHeartbeat, self.heartbeatPeriod * 1.10)
+        self.expectedHeartbeatRegistration = TimerEventRegistration(self._expectedHeartbeat,
+                                                                    self.heartbeatPeriod * 1.10)
         self.engine.eventManager.registerHandler(self.expectedHeartbeatRegistration)
-
 
     def registerLoggedOut(self):
         if self.heartbeatTimerRegistration is not None:
@@ -144,7 +153,7 @@ class FIXConnectionHandler(object):
 
         return responses
 
-    def handle_read(self, type, closure):
+    def handle_read(self, msgtype, closure):
         protocol = self.codec.protocol
         try:
             msg = self.sock.recv(8192)
@@ -162,8 +171,8 @@ class FIXConnectionHandler(object):
                 logging.debug("Connection has been closed")
                 self.disconnect()
         except ConnectionError as why:
-                logging.debug("Connection has been closed %s" % (why, ))
-                self.disconnect()
+            logging.debug("Connection has been closed %s" % (why,))
+            self.disconnect()
 
     def handleSessionMessage(self, msg):
         return -1
@@ -173,7 +182,8 @@ class FIXConnectionHandler(object):
 
         beginString = decodedMsg[protocol.fixtags.BeginString]
         if beginString != protocol.beginstring:
-            logging.warning("FIX BeginString is incorrect (expected: %s received: %s)", (protocol.beginstring, beginString))
+            logging.warning("FIX BeginString is incorrect (expected: %s received: %s)",
+                            (protocol.beginstring, beginString))
             self.disconnect()
             return
 
@@ -200,7 +210,6 @@ class FIXConnectionHandler(object):
                 self.session.setRecvSeqNo(recvSeqNo)
                 self._notifyMessageObservers(decodedMsg, MessageDirection.INBOUND)
 
-
             for m in responses:
                 self.sendMsg(m)
 
@@ -216,9 +225,10 @@ class FIXConnectionHandler(object):
             except KeyError:
                 pass
             finally:
-                logging.error("Failed to process message with duplicate seq no (MsgSeqNum: %s) (and no PossDupFlag='Y') - disconnecting" % (recvSeqNo, ))
+                logging.error(
+                    "Failed to process message with duplicate seq no (MsgSeqNum: %s)"
+                    " (and no PossDupFlag='Y') - disconnecting" % (recvSeqNo,))
                 self.disconnect()
-
 
     def handle_close(self):
         if self.connectionState != ConnectionState.DISCONNECTED:
@@ -230,7 +240,6 @@ class FIXConnectionHandler(object):
             if self.observer is not None:
                 self.observer.notifyDisconnect(self)
             self.engine.eventManager.unregisterHandler(self.socketEvent)
-
 
     def sendMsg(self, msg):
         if self.connectionState != ConnectionState.CONNECTED and self.connectionState != ConnectionState.LOGGED_IN:
@@ -246,7 +255,8 @@ class FIXConnectionHandler(object):
         try:
             self._notifyMessageObservers(decodedMsg, MessageDirection.OUTBOUND)
         except DuplicateSeqNoError:
-            logging.error("We have sent a message with a duplicate seq no, failed to persist it (MsgSeqNum: %s)" % (decodedMsg[self.codec.protocol.fixtags.MsgSeqNum]))
+            logging.error("We have sent a message with a duplicate seq no, failed to persist it (MsgSeqNum: %s)" % (
+                decodedMsg[self.codec.protocol.fixtags.MsgSeqNum]))
 
 
 class FIXEndPoint(object):
@@ -266,16 +276,15 @@ class FIXEndPoint(object):
     def stop(self):
         pass
 
-    def addConnectionListener(self, handler, filter):
-        self.connectionHandlers.append((handler, filter))
+    def addConnectionListener(self, handler, filters):
+        self.connectionHandlers.append((handler, filters))
 
-    def removeConnectionListener(self, handler, filter):
+    def removeConnectionListener(self, handler, filters):
         for s in self.connectionHandlers:
-            if s == (handler, filter):
+            if s == (handler, filters):
                 self.connectionHandlers.remove(s)
 
     def notifyDisconnect(self, connection):
         self.connections.remove(connection)
         for handler in filter(lambda x: x[1] == ConnectionState.DISCONNECTED, self.connectionHandlers):
-                handler[0](connection)
-
+            handler[0](connection)

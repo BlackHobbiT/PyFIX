@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 import logging
+
 
 class FIXSession:
     def __init__(self, key, targetCompId, senderCompId):
@@ -18,13 +21,11 @@ class FIXSession:
 
     def validateRecvSeqNo(self, seqNo):
         if self.nextExpectedMsgSeqNum < int(seqNo):
-            logging.warning("SeqNum from client unexpected (Rcvd: %s Expected: %s)" % (seqNo, self.nextExpectedMsgSeqNum))
-            return (False, self.nextExpectedMsgSeqNum)
+            logging.warning("SeqNum from client unexpected (Rcvd: %s Expected: %s)" %
+                            (seqNo, self.nextExpectedMsgSeqNum))
+            return False, self.nextExpectedMsgSeqNum
         else:
-            return (True, seqNo)
+            return True, seqNo
 
     def setRecvSeqNo(self, seqNo):
-        # if self.nextExpectedMsgSeqNum != int(seqNo):
-        #     logging.warning("SeqNum from client unexpected (Rcvd: %s Expected: %s)" % (seqNo, self.nextExpectedMsgSeqNum))
         self.nextExpectedMsgSeqNum = int(seqNo) + 1
-

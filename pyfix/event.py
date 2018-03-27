@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+
 from enum import Enum
 import datetime
 import os
 from select import select, error
 import errno
 import time
+
 
 class EventType(Enum):
     NONE = 0
@@ -12,10 +15,12 @@ class EventType(Enum):
     TIMEOUT = 4
     READWRITE = READ | WRITE
 
+
 class EventRegistration(object):
     def __init__(self, callback, closure=None):
         self.callback = callback
         self.closure = closure
+
 
 class TimerEventRegistration(EventRegistration):
     class TimeoutState(Enum):
@@ -53,6 +58,7 @@ class _Event(object):
         self.fd = fd
         self.filter = filter
 
+
 class EventLoop(object):
     def add(self, event):
         pass
@@ -62,6 +68,7 @@ class EventLoop(object):
 
     def run(self, timeout):
         pass
+
 
 class SelectEventLoop(EventLoop):
     def __init__(self):
@@ -99,7 +106,7 @@ class SelectEventLoop(EventLoop):
                         if why[0] != errno.EAGAIN and why[0] != errno.EINTR:
                             break
                     else:
-                        if why[0] == errno.WSAEADDRINUSE:
+                        if why[0] == errno.EADDRINUSE:
                             break
 
 
@@ -151,7 +158,6 @@ class EventManager(object):
                         handler.timeLeft = handler.timeout
                         handler.callback(EventType.TIMEOUT, handler.closure)
 
-
     def registerHandler(self, handler):
         if isinstance(handler, TimerEventRegistration):
             pass
@@ -166,7 +172,6 @@ class EventManager(object):
             self.handlers.remove(handler)
             if isinstance(handler, FileDescriptorEventRegistration):
                 self.eventLoop.remove(_Event(handler.fd, handler.eventType))
-
 
     def isRegistered(self, handler):
         return handler in self.handlers
