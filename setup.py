@@ -10,10 +10,10 @@ config = {
     'download_url': 'https://github.com/wannabegeek/PyFIX/',
     'author_email': 'tom@wanabegeek.com.',
     'version': '0.1.1',
-    'install_requires': [''],
+    'install_requires': ['mock'],
     'packages': ['pyfix', 'pyfix/FIX44'],
     'scripts': [],
     'name': 'pyfix'
 }
 
-setup(**config, install_requires=['mock'])
+setup(**config)
