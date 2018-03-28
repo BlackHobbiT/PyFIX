@@ -30,15 +30,15 @@ class Codec(object):
     def current_datetime():
         return datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]
 
-    def _addTag(self, body, t, msg):
-        if msg.isRepeatingGroup(t):
-            count, groups = msg.getRepeatingGroup(t)
-            body.append("%s=%s" % (t, count))
+    def _addTag(self, msg_body, tag_name, core_msg):
+        if core_msg.isRepeatingGroup(tag_name):
+            count, groups = core_msg.getRepeatingGroup(tag_name)
+            msg_body.append("%s=%s" % (tag_name, count))
             for group in groups:
                 for tag in group.tags:
-                    self._addTag(body, tag, group)
+                    self._addTag(msg_body, tag, group)
         else:
-            body.append("%s=%s" % (t, msg[t]))
+            msg_body.append("%s=%s" % (tag_name, core_msg[tag_name]))
 
     def encode(self, msg, session):
         # Create body
@@ -76,9 +76,6 @@ class Codec(object):
         for t in msg.tags:
             self._addTag(body, t, msg)
 
-        # Enable easy change when debugging
-        SEP = self.SOH
-
         body = self.SOH.join(body) + self.SOH
 
         # Create header
@@ -91,11 +88,9 @@ class Codec(object):
         fixmsg = self.SOH.join(header) + self.SOH + body
 
         cksum = sum([ord(i) for i in list(fixmsg)]) % 256
-        fixmsg = fixmsg + "%s=%0.3i" % (self.protocol.fixtags.CheckSum, cksum)
+        fixmsg = fixmsg + "%s=%0.3i" % (self.protocol.fixtags.CheckSum, cksum) + self.SOH
 
-        # print len(fixmsg)
-
-        return fixmsg + SEP
+        return fixmsg
 
     def decode(self, rawmsg):
         # msg = rawmsg.rstrip(os.linesep).split(SOH)
@@ -130,9 +125,6 @@ class Codec(object):
                 msg = rawmsg[:msgLength].split(self.SOH)
                 msg = msg[:-1]
                 decodedMsg = FIXMessage("UNKNOWN")
-
-                # logging.debug("\t-----------------------------------------")
-                # logging.debug("\t" + "|".join(msg))
 
                 repeatingGroups = []
                 repeatingGroupTags = self.protocol.fixtags.repeatingGroupIdentifiers()
