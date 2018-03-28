@@ -2,6 +2,7 @@
 
 from pyfix.FIX44 import msgtype, fixtags
 from pyfix.message import FIXMessage
+from uuid import uuid4
 
 
 class Messages(object):
@@ -27,6 +28,7 @@ class Messages(object):
     @staticmethod
     def test_request():
         msg = FIXMessage(msgtype.TESTREQUEST)
+        msg.setField(fixtags.TestReqID, str(uuid4()))
         return msg
 
     @staticmethod
